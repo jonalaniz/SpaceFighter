@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		568267F4255BD1700065266C /* explosion.sks in Resources */ = {isa = PBXBuildFile; fileRef = 568267F3255BD1700065266C /* explosion.sks */; };
 		56985A2A255B767F00F79F32 /* Keyboard KeyValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56985A29255B767F00F79F32 /* Keyboard KeyValues.swift */; };
 		56AEA088255B4E77009C997E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AEA087255B4E77009C997E /* AppDelegate.swift */; };
 		56AEA08E255B4E77009C997E /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AEA08D255B4E77009C997E /* GameScene.swift */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		568267F3255BD1700065266C /* explosion.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = explosion.sks; sourceTree = "<group>"; };
 		56985A29255B767F00F79F32 /* Keyboard KeyValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Keyboard KeyValues.swift"; sourceTree = "<group>"; };
 		56AEA084255B4E77009C997E /* SpaceFighter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpaceFighter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56AEA087255B4E77009C997E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 				56AEA08D255B4E77009C997E /* GameScene.swift */,
 				56985A29255B767F00F79F32 /* Keyboard KeyValues.swift */,
 				56AEA08F255B4E77009C997E /* ViewController.swift */,
+				568267F3255BD1700065266C /* explosion.sks */,
 				56AEA091255B4E7A009C997E /* Assets.xcassets */,
 				56AEA093255B4E7A009C997E /* Main.storyboard */,
 				56AEA096255B4E7A009C997E /* Info.plist */,
@@ -126,6 +129,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				568267F4255BD1700065266C /* explosion.sks in Resources */,
 				56AEA092255B4E7A009C997E /* Assets.xcassets in Resources */,
 				56AEA095255B4E7A009C997E /* Main.storyboard in Resources */,
 			);

@@ -8,12 +8,16 @@
 import SpriteKit
 import GameplayKit
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     let player1 = SKSpriteNode(imageNamed: "shipBlack")
     let player2 = SKSpriteNode(imageNamed: "shipBlue")
     
     var player1CanFire = true
     var player2CanFire = true
+    
+    var gameOverLabel = SKLabelNode(fontNamed: "Courier")
+    
+    var isGameOver = false
     
     var keysPressed: Set<Int> = []
     
@@ -64,6 +68,7 @@ class GameScene: SKScene {
     func setupGame() {
         backgroundColor = .black
         physicsWorld.gravity = .zero
+        physicsWorld.contactDelegate = self
         
         let size = CGSize(width: player1.size.width / 2, height: player1.size.height / 2)
         
@@ -71,19 +76,39 @@ class GameScene: SKScene {
         player1.name = "player1"
         player1.setScale(0.5)
         player1.physicsBody = SKPhysicsBody(texture: player1.texture!, size: size)
+        player1.physicsBody?.contactTestBitMask = 1
         
         player2.zPosition = 1
         player2.name = "player2"
         player2.setScale(0.5)
         player2.physicsBody = SKPhysicsBody(texture: player2.texture!, size: size)
+        player2.physicsBody?.contactTestBitMask = 1
+        
+        gameOverLabel.position = CGPoint(x: frame.midX, y: frame.midY)
+        gameOverLabel.fontSize = 40
+        gameOverLabel.isHidden = true
+        
+        addChild(gameOverLabel)
     }
     
     func startGame() {
         player1.position = CGPoint(x: frame.midX - 150, y: frame.midY)
         player2.position = CGPoint(x: frame.midX + 150, y: frame.midY)
         
+        player1.zRotation = 0
+        player2.zRotation = 0
+        
         addChild(player1)
         addChild(player2)
+    }
+    
+    func endGame(loser entity: SKNode) {
+        isGameOver = true
+        gameOverLabel.text = "Game Over!"
+        gameOverLabel.isHidden = false
+        
+        player1CanFire = true
+        player2CanFire = true
     }
     
     func pollKeyboard() {
@@ -106,9 +131,19 @@ class GameScene: SKScene {
                 movePlayer(ship: player2, direction: .right)
             case Key.Up.rawValue:
                 movePlayer(ship: player2, direction: .up)
-            case Key.RightOption.rawValue:
+            case Key.Slash.rawValue:
                 print("ship two")
                 shoot(from: player2)
+                
+            // If the game is over, use this key to reset the game
+            case Key.R.rawValue:
+                if isGameOver {
+                    removeAllActions()
+                    removeAllChildren()
+                    setupGame()
+                    startGame()
+                    isGameOver = false
+                }
             default:
                 print("default")
             }
@@ -131,7 +166,7 @@ class GameScene: SKScene {
     }
     
     func shoot(from ship: SKSpriteNode) {
-        print("WTF")
+        if isGameOver { return }
         if ship.name == "player1" {
             if !player1CanFire { return }
         } else {
@@ -143,11 +178,12 @@ class GameScene: SKScene {
         // Create our blast and movement
         let blast = SKSpriteNode(imageNamed: "laser")
         let duration: Double = 0.4
-        blast.position = getPositionForBlast(from: ship, distance: 50)
+        blast.position = getPositionForBlast(from: ship, distance: 55)
         blast.zRotation = ship.zRotation
         blast.name = "blast"
         blast.physicsBody = SKPhysicsBody(texture: blast.texture!, size: (blast.texture!.size()))
         blast.physicsBody?.allowsRotation = false
+        blast.physicsBody?.contactTestBitMask = 1
         
         let movement = getMovementFor(entity: blast, distance: 400, duration: duration)
         let fade = SKAction.fadeOut(withDuration: duration)
@@ -186,5 +222,35 @@ class GameScene: SKScene {
         let movement = SKAction.move(to: CGPoint(x: xPosition, y: yPosition), duration: duration)
         
         return movement
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        guard let nodeA = contact.bodyA.node else { return }
+        guard let nodeB = contact.bodyB.node else { return }
+        
+        // If either of the nodes are a blast and a "Player"
+        if nodeA.name == "blast" && nodeB.name!.hasPrefix("p") {
+            nodeA.removeFromParent()
+            destroy(entity: nodeB)
+        } else if nodeB.name == "blast" && nodeA.name!.hasPrefix("p") {
+            nodeB.removeFromParent()
+            destroy(entity: nodeA)
+        }
+    }
+    
+    func destroy(entity: SKNode) {
+        let explosion = SKEmitterNode(fileNamed: "explosion")!
+        let wait = SKAction.wait(forDuration: 0.5)
+        
+        explosion.position = entity.position
+        addChild(explosion)
+        entity.removeAllActions()
+        entity.removeFromParent()
+        
+        endGame(loser: entity)
+
+        run(wait) {
+            explosion.removeFromParent()
+        }
     }
 }
