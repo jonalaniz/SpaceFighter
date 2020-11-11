@@ -26,15 +26,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         startGame()
     }
     
+    // When a key is pressed, add it to the keysPressed Set to be handled when update polls the set
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(Int(event.keyCode))
     }
     
+    // Remove the key from the keysPressed set when the key is let go
     override func keyUp(with event: NSEvent) {
         keysPressed.remove(Int(event.keyCode))
     }
     
-    
+    // Runs commands based on keys pressed and checks if nodes are out of bounds each time game updates itself
     override func update(_ currentTime: TimeInterval) {
         pollKeyboard()
         
@@ -65,6 +67,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    // Initial setup and configuration of nodes in game
     func setupGame() {
         backgroundColor = .black
         physicsWorld.gravity = .zero
@@ -91,6 +94,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(gameOverLabel)
     }
     
+    // Start Game flow
     func startGame() {
         player1.position = CGPoint(x: frame.midX - 150, y: frame.midY)
         player2.position = CGPoint(x: frame.midX + 150, y: frame.midY)
@@ -102,6 +106,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(player2)
     }
     
+    // End Game flow
     func endGame(loser entity: SKNode) {
         isGameOver = true
         gameOverLabel.text = "Game Over!"
@@ -111,6 +116,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player2CanFire = true
     }
     
+    // Function to handle the pressing of keys
     func pollKeyboard() {
         for key in keysPressed {
             switch key {
@@ -150,6 +156,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    // Moves ship passed either by rotating or moving ship forward
     func movePlayer(ship player: SKSpriteNode, direction: Direction) {
         var movement = SKAction()
         
@@ -166,6 +173,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func shoot(from ship: SKSpriteNode) {
+        // Make sure the game is not over and that the ships can fire, else reutrn
         if isGameOver { return }
         if ship.name == "player1" {
             if !player1CanFire { return }
@@ -173,6 +181,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if !player2CanFire { return }
         }
         
+        // Set player`x`CanShoot to false
         setShootingFlag(for: ship.name!, to: false)
         
         // Create our blast and movement
@@ -192,12 +201,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         addChild(blast)
         
+        // Shoot, fade, and wait - then remove the shot from the scene and set the shooting flag to true
         blast.run(sequence) {
             blast.removeFromParent()
             self.setShootingFlag(for: ship.name!, to: true)
         }
     }
     
+    // This methos sets player`x`CanShoot to either true or false
     func setShootingFlag(for player: String, to flag: Bool) {
         if player == "player1" {
             player1CanFire = flag
@@ -206,6 +217,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    // Calculates the angle and point for the blast to move to
     func getPositionForBlast(from entity: SKSpriteNode, distance: CGFloat) -> CGPoint {
         let rotation = entity.zRotation - 1.57
         let xPosition = distance * -cos(rotation) + entity.position.x
@@ -214,6 +226,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         return CGPoint(x: xPosition, y: yPosition)
     }
     
+    // Creates a movement based on the Ship's angle, distance to travel, and duration (speed) of travel
     func getMovementFor(entity: SKSpriteNode, distance: CGFloat, duration: Double) -> SKAction {
         let rotation = entity.zRotation - 1.57
         let xPosition = distance * -cos(rotation) + entity.position.x
@@ -224,6 +237,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         return movement
     }
     
+    // Checks collisions and destroyes player when hit from blast
     func didBegin(_ contact: SKPhysicsContact) {
         guard let nodeA = contact.bodyA.node else { return }
         guard let nodeB = contact.bodyB.node else { return }
@@ -238,6 +252,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    // Destroy function to add explosion SKEmitterNode and remove the player from the scene
     func destroy(entity: SKNode) {
         let explosion = SKEmitterNode(fileNamed: "explosion")!
         let wait = SKAction.wait(forDuration: 0.5)
