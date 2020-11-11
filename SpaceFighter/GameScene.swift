@@ -12,6 +12,9 @@ class GameScene: SKScene {
     let player1 = SKSpriteNode(imageNamed: "shipBlack")
     let player2 = SKSpriteNode(imageNamed: "shipBlue")
     
+    var player1CanFire = true
+    var player2CanFire = true
+    
     var keysPressed: Set<Int> = []
     
     override func didMove(to view: SKView) {
@@ -33,6 +36,7 @@ class GameScene: SKScene {
         
         for node in children {
             // Loop over all nodes and make sure they are not off screen
+            if node.name == "blast" { return }
             if node.position.y > frame.maxY {
                 // This node has gone off the top, move it to the bottom
                 // Make sure to stop movement or there will be a delay
@@ -92,6 +96,8 @@ class GameScene: SKScene {
                 movePlayer(ship: player1, direction: .right)
             case Key.W.rawValue:
                 movePlayer(ship: player1, direction: .up)
+            case Key.Space.rawValue:
+                shoot(from: player1)
                 
             // These keys move Player 2
             case Key.Left.rawValue:
@@ -100,6 +106,9 @@ class GameScene: SKScene {
                 movePlayer(ship: player2, direction: .right)
             case Key.Up.rawValue:
                 movePlayer(ship: player2, direction: .up)
+            case Key.RightOption.rawValue:
+                print("ship two")
+                shoot(from: player2)
             default:
                 print("default")
             }
@@ -115,14 +124,67 @@ class GameScene: SKScene {
         case .right:
             movement = SKAction.rotate(byAngle: -(.pi / 20), duration: 0)
         case .up:
-            let distance: CGFloat = 150
-            let rotation = player.zRotation - 1.57
-            let xPosition = distance * -cos(rotation) + player.position.x
-            let yPosition = distance * -sin(rotation) + player.position.y
-            
-            movement = SKAction.move(to: CGPoint(x: xPosition, y: yPosition), duration: 0.8)
+            movement = getMovementFor(entity: player, distance: 150, duration: 0.8)
         }
         
         player.run(movement)
+    }
+    
+    func shoot(from ship: SKSpriteNode) {
+        print("WTF")
+        if ship.name == "player1" {
+            if !player1CanFire { return }
+        } else {
+            if !player2CanFire { return }
+        }
+        
+        setShootingFlag(for: ship.name!, to: false)
+        
+        // Create our blast and movement
+        let blast = SKSpriteNode(imageNamed: "laser")
+        let duration: Double = 0.4
+        blast.position = getPositionForBlast(from: ship, distance: 50)
+        blast.zRotation = ship.zRotation
+        blast.name = "blast"
+        blast.physicsBody = SKPhysicsBody(texture: blast.texture!, size: (blast.texture!.size()))
+        blast.physicsBody?.allowsRotation = false
+        
+        let movement = getMovementFor(entity: blast, distance: 400, duration: duration)
+        let fade = SKAction.fadeOut(withDuration: duration)
+        let wait = SKAction.wait(forDuration: duration / 2)
+        let sequence = SKAction.group([movement, fade, wait])
+        
+        addChild(blast)
+        
+        blast.run(sequence) {
+            blast.removeFromParent()
+            self.setShootingFlag(for: ship.name!, to: true)
+        }
+    }
+    
+    func setShootingFlag(for player: String, to flag: Bool) {
+        if player == "player1" {
+            player1CanFire = flag
+        } else {
+            player2CanFire = flag
+        }
+    }
+    
+    func getPositionForBlast(from entity: SKSpriteNode, distance: CGFloat) -> CGPoint {
+        let rotation = entity.zRotation - 1.57
+        let xPosition = distance * -cos(rotation) + entity.position.x
+        let yPosition = distance * -sin(rotation) + entity.position.y
+        
+        return CGPoint(x: xPosition, y: yPosition)
+    }
+    
+    func getMovementFor(entity: SKSpriteNode, distance: CGFloat, duration: Double) -> SKAction {
+        let rotation = entity.zRotation - 1.57
+        let xPosition = distance * -cos(rotation) + entity.position.x
+        let yPosition = distance * -sin(rotation) + entity.position.y
+        
+        let movement = SKAction.move(to: CGPoint(x: xPosition, y: yPosition), duration: duration)
+        
+        return movement
     }
 }
