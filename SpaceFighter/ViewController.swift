@@ -11,7 +11,7 @@ import GameplayKit
 
 class ViewController: NSViewController {
 
-    @IBOutlet var skView: SKView!
+    var skView: SKView!
     
     override func viewWillAppear() {
         self.view.window?.aspectRatio = NSSize(width: 800, height: 600)
