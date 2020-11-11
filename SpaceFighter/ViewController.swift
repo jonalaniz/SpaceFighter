@@ -13,24 +13,22 @@ class ViewController: NSViewController {
 
     @IBOutlet var skView: SKView!
     
+    override func viewWillAppear() {
+        self.view.window?.aspectRatio = NSSize(width: 800, height: 600)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        if let view = self.skView {
-            // Load the SKScene from 'GameScene.sks'
-            if let scene = SKScene(fileNamed: "GameScene") {
-                // Set the scale mode to scale to fit the window
-                scene.scaleMode = .aspectFill
-                
-                // Present the scene
-                view.presentScene(scene)
-            }
-            
-            view.ignoresSiblingOrder = true
-            
-            view.showsFPS = true
-            view.showsNodeCount = true
-        }
+        setupGameScene()
+    }
+    
+    func setupGameScene() {
+        let scene = GameScene(size: CGSize(width: 800, height: 600))
+        scene.scaleMode = .aspectFit
+        scene.anchorPoint = CGPoint(x: 0, y: 0)
+        
+        skView = self.view as? SKView
+        skView.presentScene(scene)
     }
 }
 
