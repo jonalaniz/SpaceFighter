@@ -15,7 +15,6 @@ class GameScene: SKScene {
     var keysPressed: Set<Int> = []
     
     override func didMove(to view: SKView) {
-        backgroundColor = .black
         setupGame()
         startGame()
     }
@@ -28,26 +27,29 @@ class GameScene: SKScene {
         keysPressed.remove(Int(event.keyCode))
     }
     
+    
     override func update(_ currentTime: TimeInterval) {
         pollKeyboard()
         
         for node in children {
+            // Loop over all nodes and make sure they are not off screen
             if node.position.y > frame.maxY {
-                // Node had gone past the top of the frame, stop actions and move to bottom of frame
+                // This node has gone off the top, move it to the bottom
+                // Make sure to stop movement or there will be a delay
                 node.removeAllActions()
                 node.position.y = frame.minY
             } else if node.position.y < frame.minY {
-                // Node has gone past the bottom of the frame, stop actions and move to bottom of frame
+                // This node has gone off the bottom, move it to the top
                 node.removeAllActions()
                 node.position.y = frame.maxY
             }
             
             if node.position.x > frame.maxX {
-                // Node had gone past the right of the frame, stop actions and move to left of frame
+                // This node has gone off the right, move it to the left
                 node.removeAllActions()
                 node.position.x = frame.minX
             } else if node.position.x < frame.minX {
-                // Node has gone past the left of the frame, stop actions and move to right of frame
+                // This node has gone off the left, move it to the right
                 node.removeAllActions()
                 node.position.x = frame.maxX
             }
@@ -56,7 +58,10 @@ class GameScene: SKScene {
     }
     
     func setupGame() {
-        let size = CGSize(width: player1.size.width / 2, height: player1.size.width / 2)
+        backgroundColor = .black
+        physicsWorld.gravity = .zero
+        
+        let size = CGSize(width: player1.size.width / 2, height: player1.size.height / 2)
         
         player1.zPosition = 1
         player1.name = "player1"
@@ -65,11 +70,8 @@ class GameScene: SKScene {
         
         player2.zPosition = 1
         player2.name = "player2"
-        player2.setScale((0.5))
+        player2.setScale(0.5)
         player2.physicsBody = SKPhysicsBody(texture: player2.texture!, size: size)
-        
-        physicsWorld.gravity = .zero
-        //physicsWorld.contactDelegate = self
     }
     
     func startGame() {
@@ -83,20 +85,23 @@ class GameScene: SKScene {
     func pollKeyboard() {
         for key in keysPressed {
             switch key {
+            // These keys move Player 1
             case Key.A.rawValue:
                 movePlayer(ship: player1, direction: .left)
             case Key.D.rawValue:
                 movePlayer(ship: player1, direction: .right)
             case Key.W.rawValue:
                 movePlayer(ship: player1, direction: .up)
-            case Key.Up.rawValue:
-                movePlayer(ship: player2, direction: .up)
+                
+            // These keys move Player 2
             case Key.Left.rawValue:
                 movePlayer(ship: player2, direction: .left)
             case Key.Right.rawValue:
                 movePlayer(ship: player2, direction: .right)
+            case Key.Up.rawValue:
+                movePlayer(ship: player2, direction: .up)
             default:
-                print("pp")
+                print("default")
             }
         }
     }
@@ -107,10 +112,10 @@ class GameScene: SKScene {
         switch direction {
         case .left:
             movement = SKAction.rotate(byAngle: .pi / 20, duration: 0)
-        case.right:
+        case .right:
             movement = SKAction.rotate(byAngle: -(.pi / 20), duration: 0)
-        case.up:
-            let distance: CGFloat = 150.0
+        case .up:
+            let distance: CGFloat = 150
             let rotation = player.zRotation - 1.57
             let xPosition = distance * -cos(rotation) + player.position.x
             let yPosition = distance * -sin(rotation) + player.position.y
